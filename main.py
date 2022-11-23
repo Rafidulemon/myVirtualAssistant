@@ -2,17 +2,18 @@ import speech_recognition as sr
 import pyttsx3
 import datetime
 import pywhatkit
-import pyjokes
 import wikipedia
-import webbrowser
-import os
-import smtplib
 import googletrans
-import gtts
 import playsound
-import requests
-import subprocess
-import calendar
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtGui import QMovie
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt, QTimer, QTime, QDate
+from AssistantUI import Ui_MainWindow
+import sys
+
 
 r = sr.Recognizer()
 translator = googletrans.Translator()
@@ -21,17 +22,15 @@ greetings = ['good morning', 'good afternoon', 'good evening', 'good night']
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[1].id)
+engine.setProperty('rate', 190)
 
 def talk(text):
     engine.say(text)
     engine.runAndWait()
 
-# from intro import play_gif
-# play_gif
-
 def take_command():
     try:
-        with sr.Microphone(device_index=1) as source:
+        with sr.Microphone() as source:
             r.adjust_for_ambient_noise(source, duration=0.5)
             print("Listening")
             voice = r.listen(source,timeout=5, phrase_time_limit=5)
@@ -69,158 +68,6 @@ def greeting():
         greeting = "good evening"
     return greeting
 
-def trans():
-    talk("I can only translate to Japanese language now. Now tell me what should i translate.")
-    content = take_command()
-    translated = translator.translate(content, dest='ja')
-    trans = translated.text
-    print(trans)
-    audio = gtts.gTTS(translated.text, lang=translate_to)
-    audio.save('audio.mp3')
-    playsound.playsound('audio.mp3')
-    os.remove('audio.mp3')
-
-def openBrowser(command):
-    if 'youtube' in command:
-        talk("Opening youtube for you")
-        webbrowser.open("https://www.youtube.com/")
-    elif 'google' in command:
-        talk("Opening google for you")
-        webbrowser.open("https://www.google.com")
-    elif 'facebook' in command:
-        talk("Opening facebook for you")
-        webbrowser.open("https://www.facebook.com")
-    elif 'linkedin' in command:
-        talk("Opening linkedin for you")
-        webbrowser.open("https://www.linkedin.com/")
-    elif 'github' in command:
-        talk("Opening github for you")
-        webbrowser.open("https://www.github.com/")
-    elif 'android studio' in command:
-        talk("Opening android studio for you")
-        path = "C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
-        os.startfile(path)
-    elif 'vs code' in command:
-        talk("Opening visual studio for you")
-        path = "C:\\Users\\Asus\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
-        os.startfile(path)
-    elif 'firefox' in command:
-        talk("Opening Mozilla firefox for you")
-        path = "C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe"
-        os.startfile(path)
-    elif 'file explorer' in command:
-        subprocess.Popen('explorer')
-    elif 'c drive' in command:
-        print("Opening c drive...")
-        talk("Opening c drive sir")
-        subprocess.Popen('explorer "C:\"')
-    elif 'd drive' in command:
-        print("Opening d drive...")
-        talk("Opening d drive sir")
-        subprocess.Popen('explorer "D:\"')
-    elif 'e drive' in command:
-        print("Opening e drive...")
-        talk("Opening e drive sir")
-        subprocess.Popen('explorer "E:\"')
-    elif 'f drive' in command:
-        print("Opening f drive...")
-        talk("Opening f drive sir")
-        subprocess.Popen('explorer "F:\"')
-    elif 'camera' in command:
-        print("Opening camera...")
-        talk("Opening camera sir")
-        os.system("start microsoft.windows.camera:")
-    elif 'calendar' in command:
-        talk("For which year sir?")
-        yy = int(input("Enter year: "))
-        talk("Which month sir?")
-        mm = int(input("Enter month: "))
-        talk("Thank you sir.Showing calendar..")
-        print("Showing calendar...")
-        print(calendar.month(yy, mm))
-    elif 'zoom' in command:
-        talk("Opening zoom for you")
-        path = "C:\\Users\\Asus\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
-        os.startfile(path)
-    elif 'slack' in command:
-        talk("Opening slack for you")
-        path = "C:\\Users\\Asus\\AppData\\Local\\slack\\slack.exe"
-        os.startfile(path)
-
-    else:
-        print("URL not found")
-        talk("URL not found")
-
-def openEmail():
-    try:
-        talk("Tell me the email address")
-        to = input("Enter receiver email address:")
-        talk("What should I say")
-        content = take_command()
-        sendEmail(to, content)
-        talk("Email has been sent!")
-    except Exception as e:
-        #print(e)
-        talk("I am not able to send this email")
-
-def sendEmail(to, content):
-    server = smtplib.SMTP('smtp.gmail.com',587)
-    server.ehlo()
-    server.starttls()
-    server.login('rafid.nexkraft@gmail.com', 'rafid420')
-    server.sendmail('rafid.nexkraft@gmail.com', to, content)
-    server.close()
-
-def weather():
-    talk("Enter the city name please")
-    city = input('Enter the city name please')
-    talk('Displaying Weather report for: ' + city)
-    print('Displaying Weather report for: ' + city)
-    url = 'https://wttr.in/{}'.format(city)
-    res = requests.get(url)
-    print(res.text)
-
-def dateDetails(command):
-    if 'time' in command:
-        time = datetime.datetime.now().strftime('%I:%M %p')
-        print(time)
-        talk('It is'+time)
-    elif 'date' in command:
-        today = datetime.datetime.now().strftime('%B %d,%Y')
-        print(today)
-        talk('Today is '+today)
-    elif 'weekday' in command:
-        today = datetime.datetime.now().strftime('%A')
-        print(today)
-        talk('Today is '+today)
-
-def other(command):
-    if 'joke' in command:
-        joke = pyjokes.get_joke()
-        print(joke)
-        talk(joke)
-    elif 'thank you' in command:
-        talk('You are most welcome')
-    elif 'who are you' in command:
-        talk('I am your virtual assistant')
-    elif 'your name' in command:
-        talk('I am your virtual assistant Aliza.')
-    elif 'are you single' in command:
-        talk('Opps!! Machine can not be in relationship.')
-    elif 'how are you' in command:
-        talk('I am fine. What about you?')
-    elif 'i am fine' in command:
-        talk('Good to know that.')
-    elif 'i love you' in command:
-        talk('Ha ha ha    Good to know that. I also love you.')
-    elif 'what are you doing now' in command:
-        talk("Talking to you sir!")
-    elif 'are you free' in command:
-        talk('No. I am available now, but not free')
-    else:
-        talk('I did not get you. But I am going to search it for you')
-        pywhatkit.search(command)
-
 def take_command():
     try:
         with sr.Microphone(device_index=1) as source:
@@ -231,24 +78,23 @@ def take_command():
             result = result.lower()
             print("Did you say " + "-" + result + "?")
     except Exception as ex:
-        # print(ex)
-        print('Say it again')
+        print(ex)
+        #print('Say it again')
         return "None"
     return result
 
 def execute(command):
     if 'time' in command or 'date' in command or 'weekday' in command:
+        from dateTime import dateDetails
         dateDetails(command)
 
     elif 'weather' in command or 'weather update' in command:
+        from weather import weather
         weather()
 
-    # elif "set an alarm" in command:
-    #     print("input time example:- 10 and 10 and 10")
-    #     talk("Set the time")
-    #     a = input("Please tell the time :- ")
-    #     alarm(a)
-    #     talk("Done,sir")
+    elif 'temperature' in command:
+        from temperature import Temperature
+        Temperature()
 
     elif 'play' in command:
         song = command.replace('play', '')
@@ -256,16 +102,27 @@ def execute(command):
         pywhatkit.playonyt(song)
 
     elif 'open' in command or 'go to' in command:
+        from open import openBrowser
         openBrowser(command)
 
     elif 'search' in command or 'search in' in command or 'tell me about' in command:
         from search import search
         search()
 
+    elif 'world cup points table' in command:
+        from sports import fixture
+        fixture()
+
+    elif 'world cup live' in command:
+        from sports import fifaLive
+        fifaLive()
+
     elif 'send email' in command:
+        from open import openEmail
         openEmail()
 
     elif 'translate' in command:
+        from trans import trans
         trans()
 
     elif 'hello' in command or 'hi' in command:
@@ -274,7 +131,6 @@ def execute(command):
 
     elif command in greetings:
         greetingCheck(command)
-
 
     elif 'wikipedia' in command or 'tell me about' in command:
         talk("Searching wikipedia")
@@ -291,24 +147,131 @@ def execute(command):
         print("Error occurred")
 
     else:
+        from otherCommands import other
         other(command)
 
-if __name__ == "__main__":
-    while True:
-        command = take_command()
-        if 'wake up' in command:
-            from greetings import greeting
-            greeting()
+def TaskExe():
+    if __name__ == "__main__":
+        # from FaceRecognition import rec
+        # rec()
+        while True:
+            command = take_command()
+            if 'alisha' in command or 'aliza' in command or 'alija' in command or 'alesha' in command\
+                    or 'aleza' in command or 'aleja' in command or 'lisa' in command\
+                    or 'eliza' in command or 'aligarh' in command or 'alyssa' in command:
+                from greetings import greeting
+                greeting()
 
-            while True:
-                command = take_command()
-                if 'exit' in command:
-                    print("Exiting..")
-                    talk("Thank you. Good Bye for now")
-                    exit()
-                elif 'wake up' in command:
-                    talk("I am awake sir. Please tell me, How can I help you ?")
-                else:
-                    execute(command)
-        else:
-            print("Please say wake up to start conversation")
+                while True:
+                    command = take_command()
+                    if 'exit' in command:
+                        print("Exiting..")
+                        talk("Thank you. Good Bye for now")
+                        exit()
+                    elif 'wake up' in command:
+                        talk("I am awake sir. Please tell me, How can I help you ?")
+                    else:
+                        execute(command)
+            else:
+                talk("Sorry! Unauthorized command detected. I can not move forward without authorized command")
+                print("Unable to start")
+
+
+#GUI code here
+class MainThread(QThread):
+
+    def __init__(self):
+        super(MainThread, self).__init__()
+
+    def run(self):
+        self.Task_Gui()
+
+    def Task_Gui(self):
+
+        TaskExe()
+
+
+startFunctions = MainThread()
+
+
+class Gui_Start(QMainWindow):
+
+    def __init__(self):
+        super().__init__()
+
+        self.jarvis_ui = Ui_MainWindow()
+
+        self.jarvis_ui.setupUi(self)
+
+        self.jarvis_ui.pushButton.clicked.connect(self.startFunc)
+
+        self.jarvis_ui.pushButton_2.clicked.connect(self.close)
+
+
+    def startFunc(self):
+        self.jarvis_ui.movies = QtGui.QMovie("gif.gif")
+
+        self.jarvis_ui.Gif.setMovie(self.jarvis_ui.movies)
+
+        self.jarvis_ui.movies.start()
+
+        self.jarvis_ui.movies_2 = QtGui.QMovie("gif3.gif")
+
+        self.jarvis_ui.Gif_2.setMovie(self.jarvis_ui.movies_2)
+
+        self.jarvis_ui.movies_2.start()
+
+        self.jarvis_ui.movies_3 = QtGui.QMovie(
+            "gif4.gif")
+
+        self.jarvis_ui.Gif_3.setMovie(self.jarvis_ui.movies_3)
+
+        self.jarvis_ui.movies_3.start()
+
+        self.jarvis_ui.movies_4 = QtGui.QMovie("gif5.gif")
+
+        self.jarvis_ui.Gif_4.setMovie(self.jarvis_ui.movies_4)
+
+
+        self.jarvis_ui.movies_4.start()
+
+
+        timer = QTimer(self)
+
+        timer.timeout.connect(self.showtime)
+
+        timer.start(1000)
+
+        self.showDate()
+        self.showWeek()
+
+        startFunctions.start()
+
+    def showtime(self):
+        current_time = QTime.currentTime()
+
+        label_time = current_time.toString("hh:mm:ss")
+
+        labbel = "Time:" + label_time
+
+        self.jarvis_ui.textBrowser.setText(labbel)
+
+    def showDate(self):
+        current_date = QDate.currentDate()
+        label_date = current_date.toString("dd-MMMM yyyy")
+        labbbel = label_date
+        self.jarvis_ui.textBrowser_2.setText(labbbel)
+
+    def showWeek(self):
+        current_date = QDate.currentDate()
+        label_date = current_date.toString("dddd")
+        labbbel = label_date
+        self.jarvis_ui.textBrowser_7.setText(labbbel)
+
+Gui_App = QApplication(sys.argv)
+
+Gui_Jarvis = Gui_Start()
+
+Gui_Jarvis.show()
+
+exit(Gui_App.exec_())
